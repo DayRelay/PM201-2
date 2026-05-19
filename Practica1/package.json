@@ -1,0 +1,12 @@
+{
+  "name": "practica-restaurante",
+  "version": "1.0.0",
+  "description": "Sistema interactivo de gestión de restaurante",
+  "main": "Practica.js",
+  "scripts": {
+    "start": "node Practica.js"
+  },
+  "keywords": ["restaurante", "pedidos", "productos"],
+  "author": "",
+  "license": "MIT"
+}
