@@ -1,54 +1,83 @@
 const readline = require('readline');
-const fs = require('fs'); // IMPORTANTE: Herramienta para guardar archivos
+const fs = require('fs');
 
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
 
-let productos = [
-    { id: 1, nombre: "Hamburguesa Clásica", precio: 120 },
-    { id: 2, nombre: "Papas Fritas", precio: 50 },
-    { id: 3, nombre: "Refresco", precio: 30 },
-    { id: 4, nombre: "Helado", precio: 45 }
-];
+let productos = [];
+let pedidos = [];
 
-let promociones = [
-    "¡10% de descuento en tu primera compra!",
-    "Combo: Hamburguesa + Papas + Refresco por $180"
-];
-
-let pedidos = []; 
-
-// Función nueva para guardar en el disco duro
-function guardarBaseDeDatos() {
-    let textoPlano = JSON.stringify(pedidos); 
-    fs.writeFileSync('base_datos.json', textoPlano); // Crea el archivo compartido
-}
-
-// Cargar datos previos si el archivo ya existe
-if (fs.existsSync('base_datos.json')) {
-    let contenido = fs.readFileSync('base_datos.json', 'utf8');
-    pedidos = JSON.parse(contenido);
-}
-
-function mostrarPromociones() {
-    console.log("\n--- PROMOCIONES ---");
-    for (let i = 0; i < promociones.length; i++) {
-        console.log("  " + (i + 1) + ". " + promociones[i]);
+function cargarDatos() {
+    if (fs.existsSync('base_productos.json')) {
+        let contenido = fs.readFileSync('base_productos.json', 'utf8');
+        productos = JSON.parse(contenido);
     }
-    console.log("=================================");
+    if (fs.existsSync('base_datos.json')) {
+        let contenido = fs.readFileSync('base_datos.json', 'utf8');
+        pedidos = JSON.parse(contenido);
+    }
 }
 
-function consultarProductos() {
+function guardarPedidos() {
+    fs.writeFileSync('base_datos.json', JSON.stringify(pedidos, null, 2));
+}
+
+
+function simularTiemposDeCocina(pedido) {
+    return new Promise((resolve, reject) => {
+        console.log(`\n[Cocina]: Pedido de ${pedido.cliente} recibido. Empezando a preparar...`);
+        
+        setTimeout(() => {
+            console.log(`\n[Cocina]: Preparando los artículos de ${pedido.cliente}...`);
+            
+            setTimeout(() => {
+                let exito = Math.random() > 0.2; 
+                if (exito) {
+                    console.log(`\n[Cocina]: Empacando pedido de ${pedido.cliente}...`);
+                    resolve("Listo para entregar"); 
+                } else {
+                    reject("Cancelado por falta de ingredientes en cocina"); 
+                }
+            }, 3000);
+            
+        }, 3000);
+    });
+}
+
+function notificarCaja(error, mensajeExito) {
+    if (error) {
+        console.log("\n[Notificación Caja]: " + error);
+    } else {
+        console.log("\n[Notificación Caja]: " + mensajeExito + ". Ya puede pasar a cobrar.");
+    }
+}
+
+// -------------------------------------------
+// LÓGICA DE CLIENTE 
+function mostrarPromocionesCliente() {
+    console.log("\n--- PROMOCIONES ACTIVAS ---");
+    let hayPromo = false;
+    for (let i = 0; i < productos.length; i++) {
+        if (productos[i].promocion !== "ninguna") {
+            hayPromo = true;
+            console.log("  - " + productos[i].nombre + " | Promo: " + productos[i].promocion);
+        }
+    }
+    if (hayPromo === false) console.log("  No hay promociones por el momento.");
+    console.log("***************************************");
+}
+
+function consultarProductosCliente() {
     console.log("\n--- MENÚ DE PRODUCTOS ---");
     for (let i = 0; i < productos.length; i++) {
         console.log("  [ID: " + productos[i].id + "] " + productos[i].nombre);
     }
-    console.log("===================================");
+    console.log("***************************************");
 }
 
-function listarPedidos() {
+function listarPedidosCliente() {
     console.log("\n=== LISTADO GENERAL DE PEDIDOS ===");
     if (pedidos.length === 0) {
         console.log("  Aún no hay pedidos registrados.");
@@ -56,109 +85,102 @@ function listarPedidos() {
         for (let i = 0; i < pedidos.length; i++) {
             let ped = pedidos[i];
             let detalleTexto = "";
-
             for (let j = 0; j < ped.articulos.length; j++) {
-                let art = ped.articulos[j];
-                detalleTexto = detalleTexto + art.cantidad + "x " + art.nombre;
-                
-                if (j < ped.articulos.length - 1) {
-                    detalleTexto = detalleTexto + ", ";
-                }
+                detalleTexto = detalleTexto + ped.articulos[j].cantidad + "x " + ped.articulos[j].nombre;
+                if (j < ped.articulos.length - 1) detalleTexto = detalleTexto + ", ";
             }
             console.log("  Pedido #" + ped.idPedido + " | Cliente: " + ped.cliente + " | Detalles: [" + detalleTexto + "]");
         }
     }
-    console.log("==================================");
+    console.log("----------------------------------");
 }
 
-function iniciarMenu() {
-    console.log("\nSelecciona una opción:");
-    console.log("  1. Ver Promociones");
-    console.log("  2. Consultar Productos");
-    console.log("  3. Crear un Nuevo Pedido");
-    console.log("  4. Ver Listado de Pedidos");
-    console.log("  5. Salir");
+function menuCliente() {
+    cargarDatos(); // Sincronizamos siempre que mostramos el menú principal
+    console.log("\n--- ÁREA DE CLIENTES ---");
+    console.log("  1. Ver Promociones\n  2. Consultar Productos\n  3. Crear un Nuevo Pedido\n  4. Ver Listado de Pedidos\n  5. Salir");
 
     rl.question("Elige una opción (1-5): ", function(opcion) {
-        switch (opcion.trim()) {
-            case '1':
-                mostrarPromociones();
-                iniciarMenu();
-                break;
-            case '2':
-                consultarProductos();
-                iniciarMenu();
-                break;
-            case '3':
-                rl.question("\nEscribe el nombre del cliente: ", function(nombreCliente) {
-                    let articulosComprados = [];
+        let opc = opcion.trim();
+        if (opc === '1') {
+            mostrarPromocionesCliente();
+            menuCliente();
+        } else if (opc === '2') {
+            consultarProductosCliente();
+            menuCliente();
+        } else if (opc === '3') {
+            rl.question("\nEscribe el nombre del cliente: ", function(nombreCliente) {
+                let articulosComprados = [];
 
-                    function preguntarProducto() {
-                        consultarProductos();
-                        
-                        rl.question("Escribe el ID del producto que desea: ", function(idProducto) {
-                            rl.question("¿Cuántas unidades desea?: ", function(cantidad) {
-                                let idNum = parseInt(idProducto);
-                                let cantNum = parseInt(cantidad);
-
-                                let productoEncontrado = null;
-                                for (let i = 0; i < productos.length; i++) {
-                                    if (productos[i].id === idNum) {
-                                        productoEncontrado = productos[i];
-                                        break; 
-                                    }
+                function preguntarProducto() {
+                    consultarProductosCliente();
+                    rl.question("Escribe el ID del producto que desea: ", function(idProducto) {
+                        rl.question("¿Cuántas unidades desea?: ", function(cantidad) {
+                            let idNum = parseInt(idProducto);
+                            let cantNum = parseInt(cantidad);
+                            let productoEncontrado = null;
+                            
+                            for (let i = 0; i < productos.length; i++) {
+                                if (productos[i].id === idNum) {
+                                    productoEncontrado = productos[i];
+                                    break; 
                                 }
+                            }
 
-                                if (productoEncontrado !== null) {
-                                    articulosComprados.push({
-                                        nombre: productoEncontrado.nombre,
-                                        cantidad: cantNum
-                                    });
-                                    console.log("Agregado: " + cantNum + "x " + productoEncontrado.nombre);
+                            if (productoEncontrado !== null) {
+                                articulosComprados.push({ nombre: productoEncontrado.nombre, cantidad: cantNum });
+                                console.log("Agregado: " + cantNum + "x " + productoEncontrado.nombre);
+                            } else {
+                                console.log("Error: Ese ID no existe.");
+                            }
+
+                            rl.question("¿Deseas agregar algo más al pedido? (si / no): ", function(respuesta) {
+                                if (respuesta.toLowerCase() === "si") {
+                                    preguntarProducto(); 
                                 } else {
-                                    console.log("Error: Ese ID no existe.");
-                                }
+                                    if (articulosComprados.length > 0) {
+                                        let nuevoId = 1;
+                                        if (pedidos.length > 0) nuevoId = pedidos[pedidos.length - 1].idPedido + 1;
+                                        
+                                        let nuevoPedido = { idPedido: nuevoId, cliente: nombreCliente, articulos: articulosComprados };
+                                        
+                                        console.log("\nEnviando pedido a la cocina... (Puedes seguir usando el menú mientras se prepara)");
 
-                                rl.question("¿Deseas agregar algo más al pedido? (si / no): ", function(respuesta) {
-                                    if (respuesta.toLowerCase() === "si") {
-                                        preguntarProducto(); 
-                                    } else {
-                                        if (articulosComprados.length > 0) {
-                                            pedidos.push({
-                                                idPedido: pedidos.length + 1,
-                                                cliente: nombreCliente,
-                                                articulos: articulosComprados
+                                        simularTiemposDeCocina(nuevoPedido)
+                                            .then((resultado) => {
+                                                cargarDatos(); // Cargamos antes de pushear por si hubo cambios externos
+                                                pedidos.push(nuevoPedido);
+                                                guardarPedidos(); 
+                                                notificarCaja(null, "El pedido de " + nombreCliente + " está " + resultado);
+                                            })
+                                            .catch((error) => {
+                                                notificarCaja(error, null);
                                             });
-                                            guardarBaseDeDatos(); // <--- GUARDAMOS AL TERMINAR EL PEDIDO
-                                            console.log("\nPedido realizado, por favor pase a caja.");
-                                        } else {
-                                            console.log("\nPedido cancelado.");
-                                        }
-                                        iniciarMenu(); 
+                                            
+                                    } else {
+                                        console.log("\nPedido cancelado.");
                                     }
-                                });
+                                    
+                                    menuCliente(); 
+                                }
                             });
                         });
-                    }
-                    preguntarProducto();
-                });
-                break;
-            case '4':
-                listarPedidos();
-                iniciarMenu();
-                break;
-            case '5':
-                console.log("\nGracias por su preferencia\n");
-                rl.close(); 
-                break;
-            default:
-                console.log("\nPor favor, selecciona una opción válida (1-5).");
-                iniciarMenu();
-                break;
+                    });
+                }
+                preguntarProducto();
+            });
+        } else if (opc === '4') {
+            listarPedidosCliente();
+            menuCliente();
+        } else if (opc === '5') {
+            console.log("\nGracias por su preferencia\n");
+            rl.close();
+        } else {
+            console.log("\nOpción inválida.");
+            menuCliente();
         }
     });
 }
 
 console.clear();
-console.log("Menú Cliente");
-iniciarMenu();
+menuCliente();

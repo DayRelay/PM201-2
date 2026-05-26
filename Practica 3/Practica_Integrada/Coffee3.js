@@ -8,9 +8,7 @@ const rl = readline.createInterface({
 
 let productos = [];
 let pedidos = [];
-let pedidoActualCaja = null; // Variable auxiliar para la caja
-
-
+let pedidoActualCaja = null; 
 
 function cargarDatos() {
     if (fs.existsSync('base_productos.json')) {
@@ -43,7 +41,8 @@ function guardarPedidos() {
 cargarDatos();
 
 
-//COCINA 
+// --------------------------------------------------
+// COCINA 
 function listarProductosCocina() {
     console.log("\n--- INVENTARIO DE COCINA ---");
     console.table(productos); 
@@ -95,8 +94,13 @@ function menuBuscarCocina() {
 
 function menuCocina() {
     listarProductosCocina();
-    console.log("1. Agregar producto\n2. Editar producto\n3. Eliminar producto\n4. Buscar o Filtrar\n5. Crear Promoción\n6. Volver al Menú Principal");
-    
+    console.log("1. Agregar producto");
+    console.log("\n2. Editar producto");
+    console.log("\n3. Eliminar producto");
+    console.log("\n4. Buscar o Filtrar");
+    console.log("\n5. Crear Promoción");
+    console.log("\n6. Volver al Menú Principal");
+
     rl.question("\nOpción: ", (opcion) => {
         if (opcion === "1") {
             rl.question("Nombre: ", (nombre) => {
@@ -172,7 +176,45 @@ function menuCocina() {
     });
 }
 
-//CLIENTE 
+// ==========================================
+// ASINCRONÍA Y CALLBACKS (Promesas y setTimeout)
+// ==========================================
+function simularTiemposDeCocina(pedido) {
+    return new Promise((resolve, reject) => {
+        console.log(`\n[Cocina]: Pedido de ${pedido.cliente} recibido. Empezando a preparar...`);
+        
+        // Esperamos 3 segundos para empezar a preparar
+        setTimeout(() => {
+            console.log(`\n[Cocina]: Preparando los artículos de ${pedido.cliente}...`);
+            
+            // Esperamos otros 3 segundos para empacar y definir si hubo éxito
+            setTimeout(() => {
+                // Simulamos que el 80% de las veces sale bien, 20% falta ingrediente
+                let exito = Math.random() > 0.2; 
+                
+                if (exito) {
+                    console.log(`\n[Cocina]: Empacando pedido de ${pedido.cliente}...`);
+                    resolve("Listo para entregar"); // ¡La promesa se cumple!
+                } else {
+                    reject("Cancelado por falta de ingredientes en cocina"); // ¡Falla la promesa!
+                }
+            }, 3000);
+            
+        }, 3000);
+    });
+}
+
+function notificarCaja(error, mensajeExito) {
+    if (error) {
+        console.log("\n[Notificación Caja]: " + error);
+    } else {
+        console.log("\n[Notificación Caja]: " + mensajeExito + ". Ya puede pasar a cobrar.");
+    }
+}
+
+
+// -------------------------------------------
+// CLIENTE 
 function mostrarPromocionesCliente() {
     console.log("\n--- PROMOCIONES ACTIVAS ---");
     let hayPromo = false;
@@ -183,7 +225,7 @@ function mostrarPromocionesCliente() {
         }
     }
     if (hayPromo === false) console.log("  No hay promociones por el momento.");
-    console.log("=================================");
+    console.log("***************************************");
 }
 
 function consultarProductosCliente() {
@@ -191,7 +233,7 @@ function consultarProductosCliente() {
     for (let i = 0; i < productos.length; i++) {
         console.log("  [ID: " + productos[i].id + "] " + productos[i].nombre);
     }
-    console.log("===================================");
+    console.log("***************************************");
 }
 
 function listarPedidosCliente() {
@@ -209,7 +251,7 @@ function listarPedidosCliente() {
             console.log("  Pedido #" + ped.idPedido + " | Cliente: " + ped.cliente + " | Detalles: [" + detalleTexto + "]");
         }
     }
-    console.log("==================================");
+    console.log("----------------------------------");
 }
 
 function menuCliente() {
@@ -254,16 +296,33 @@ function menuCliente() {
                                 if (respuesta.toLowerCase() === "si") {
                                     preguntarProducto(); 
                                 } else {
+                                    // AQUÍ INTEGRAMOS LA ASINCRONÍA
                                     if (articulosComprados.length > 0) {
                                         let nuevoId = 1;
                                         if (pedidos.length > 0) nuevoId = pedidos[pedidos.length - 1].idPedido + 1;
                                         
-                                        pedidos.push({ idPedido: nuevoId, cliente: nombreCliente, articulos: articulosComprados });
-                                        guardarPedidos(); 
-                                        console.log("\nPedido realizado, por favor pase a caja.");
+                                        let nuevoPedido = { idPedido: nuevoId, cliente: nombreCliente, articulos: articulosComprados };
+                                        
+                                        console.log("\nEnviando pedido a la cocina... (Puedes seguir usando el menú mientras se prepara)");
+
+                                        // Llamamos a la Promesa de la cocina
+                                        simularTiemposDeCocina(nuevoPedido)
+                                            .then((resultado) => {
+                                                // Si sale bien: guardamos el pedido y notificamos
+                                                pedidos.push(nuevoPedido);
+                                                guardarPedidos(); 
+                                                notificarCaja(null, "El pedido de " + nombreCliente + " está " + resultado);
+                                            })
+                                            .catch((error) => {
+                                                // Si falla: no guardamos nada y enviamos el error al callback
+                                                notificarCaja(error, null);
+                                            });
+                                            
                                     } else {
                                         console.log("\nPedido cancelado.");
                                     }
+                                    
+                                    // Volvemos al menú inmediatamente sin importar si la comida está lista o no
                                     menuCliente(); 
                                 }
                             });
@@ -284,7 +343,9 @@ function menuCliente() {
     });
 }
 
-//CAJA
+
+// -------------------------------------------
+// CAJA
 function obtenerPrecioCaja(nombreBuscado) {
     for (let i = 0; i < productos.length; i++) {
         if (productos[i].nombre.toLowerCase() === nombreBuscado.toLowerCase()) {
@@ -298,7 +359,7 @@ function obtenerPrecioCaja(nombreBuscado) {
 }
 
 function mostrarResumenCaja() {
-    console.log("\n--- TICKET ACTUAL ---");
+    console.log("\n << TICKET >> ");
     console.log("Cliente: " + pedidoActualCaja.cliente);
     let subtotalCalculado = 0;
 
@@ -393,7 +454,7 @@ function confirmarCobro() {
 }
 
 function menuCaja() {
-    console.log("\n=== PEDIDOS PENDIENTES DE COBRO ===");
+    console.log("\n<< PEDIDOS PENDIENTES DE COBRO >>");
     if (pedidos.length === 0) {
         console.log("No hay pedidos pendientes.");
         console.log("Presiona Enter para volver al Menú Principal...");
@@ -432,13 +493,13 @@ function menuCaja() {
     });
 }
 
-
+// ---------------------------------------
 // MENÚ PRINCIPAL DEL SISTEMA
 function menuPrincipal() {
     console.log("\nMenú Principal");
-    console.log("  1. Entrar a la Cocina (Inventario)");
-    console.log("  2. Entrar como Cliente (Tomar Pedido)");
-    console.log("  3. Entrar a la Caja (Cobrar Pedido)");
+    console.log("  1. Cocina");
+    console.log("  2. Cliente ");
+    console.log("  3. Caja ");
     console.log("  4. Apagar Sistema");
 
     rl.question("\n¿A qué área deseas ingresar? (1-4): ", function(opcion) {
@@ -450,7 +511,7 @@ function menuPrincipal() {
         } else if (opc === "3") {
             menuCaja();
         } else if (opc === "4") {
-            console.log("\nCerrando sistema... ¡Que tengas un buen día!\n");
+            console.log("\nGracias por su preferencia\n");
             rl.close();
         } else {
             console.log("\nOpción no válida.");
