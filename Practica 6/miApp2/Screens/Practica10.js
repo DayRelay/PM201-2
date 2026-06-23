@@ -1,5 +1,10 @@
+/* importaciones */
+
 import React, {useState} from 'react';
 import { SafeAreaView, ScrollView, View, Text, Button } from 'react-native';
+
+
+/* Función */
 
 export default function Practica() {
 
@@ -17,6 +22,7 @@ export default function Practica() {
 
     return (
 
+/* Interfaz */
         <SafeAreaView style={{ flex: 1}}>
         
             <Button title="Agregar tarea" onPress={agregarTarea} />
