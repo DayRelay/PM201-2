@@ -11,11 +11,9 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+        "backgroundColor": "#E6F4FE"
+      },
+      "package": "com.anonymous.miApp2"
     },
     "web": {
       "favicon": "./assets/favicon.png"
