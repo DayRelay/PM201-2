@@ -1,88 +1,118 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
+
 import {
   ActivityIndicator,
-  Button,
+  Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 
 export default function ActivityIndicatorCarga() {
-  const [loading, setLoading] = useState(false);
-  const [mensaje, setMensaje] = useState('Presiona el botón para comenzar.');
-  const temporizador = useRef(null);
+  const [cargando, setCargando] = useState(false);
 
-  useEffect(() => {
-    return () => clearTimeout(temporizador.current);
-  }, []);
+  const iniciarCarga = () => {
+    setCargando(true);
 
-  const cargarDatos = () => {
-    clearTimeout(temporizador.current);
-    setLoading(true);
-    setMensaje('Cargando información...');
-
-    temporizador.current = setTimeout(() => {
-      setLoading(false);
-      setMensaje('Datos cargados correctamente.');
+    setTimeout(() => {
+      setCargando(false);
     }, 3000);
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.titulo}>Simulación de carga</Text>
-
-      <Text style={styles.descripcion}>
-        Este ejemplo simula durante tres segundos una petición de datos a un
-        servidor.
+    <View style={styles.tarjeta}>
+      <Text style={styles.titulo}>
+        Simulación de carga
       </Text>
 
-      <Button
-        title={loading ? 'Cargando...' : 'Obtener Datos'}
-        onPress={cargarDatos}
-        disabled={loading}
-        color="green"
-      />
+      <Text style={styles.descripcion}>
+        Presiona el botón para simular un proceso de tres segundos.
+      </Text>
 
-      <View style={styles.indicador}>
-        <ActivityIndicator
-          size="large"
-          color="green"
-          animating={loading}
-        />
-      </View>
+      {cargando ? (
+        <View style={styles.contenedorCarga}>
+          <ActivityIndicator
+            size="large"
+            color="#E63946"
+          />
 
-      <Text style={styles.texto}>{mensaje}</Text>
+          <Text style={styles.mensaje}>
+            Procesando...
+          </Text>
+        </View>
+      ) : (
+        <Pressable
+          style={({ pressed }) => [
+            styles.boton,
+            pressed && styles.botonPresionado,
+          ]}
+          onPress={iniciarCarga}
+        >
+          <Text style={styles.textoBoton}>
+            Iniciar carga
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
+  tarjeta: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     elevation: 3,
     marginBottom: 20,
     padding: 20,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
   },
+
   titulo: {
-    fontSize: 20,
+    color: '#1D3557',
+    fontSize: 21,
     fontWeight: 'bold',
-    marginBottom: 10,
+    textAlign: 'center',
   },
+
   descripcion: {
-    color: '#444444',
-    lineHeight: 20,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  indicador: {
-    height: 60,
-    justifyContent: 'center',
-    marginTop: 10,
-  },
-  texto: {
+    color: '#555555',
     fontSize: 16,
+    marginBottom: 20,
+    marginTop: 8,
     textAlign: 'center',
+  },
+
+  contenedorCarga: {
+    alignItems: 'center',
+  },
+
+  mensaje: {
+    color: '#555555',
+    fontSize: 16,
+    marginTop: 12,
+  },
+
+  boton: {
+    alignItems: 'center',
+    backgroundColor: '#1D3557',
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
+
+  botonPresionado: {
+    opacity: 0.7,
+  },
+
+  textoBoton: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

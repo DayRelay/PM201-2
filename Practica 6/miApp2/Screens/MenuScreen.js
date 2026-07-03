@@ -1,7 +1,14 @@
-/* Zona 1: importaciones de archivos y componentes  */
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, Button} from 'react-native';
-import React, {Component, useEffect,useState} from 'react';
+/* Zona 1: importaciones */
+import React, { useEffect, useState } from 'react';
+
+import {
+  Button,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
 import TarjetasScreen from './TarjetasScreen';
 import Componente1 from './Componente1';
 import FormularioScreen from './Formulario';
@@ -15,119 +22,216 @@ import SectionListScreen from './SectionList';
 import { ImagenFondo } from './ImagenFondo';
 import { Home } from './Home';
 import { SplashScreen } from './SplashScreen';
-import { ComponenetesNativos } from './ComponenetesNativos';
-import { KeyboardAvoidingDemo } from '../components/KeyboardAvoidingView';
+
+/*
+  Este archivo usa export default, por eso no lleva llaves.
+  El archivo debe llamarse ComponentesNativos.js.
+*/
+import ComponentesNativosScreen from './ComponentesNativos';
 
 
+/* Zona 2: componente principal */
+export default function MenuScreen() {
+  const [screen, setScreen] = useState('menu');
 
-/* Zona 2: Main – Componentes */
-export default function App() {
+  useEffect(() => {
+    if (screen === 'splashScreen') {
+      const timer = setTimeout(() => {
+        setScreen('home');
+      }, 6000);
 
-    const [screen,setScreen] = useState('menu');
-
-    useEffect(() => {
-        if (screen === 'splashScreen') {
-            const timer = setTimeout(() => {
-                setScreen('home');
-            }, 6000);
-            return () => clearTimeout(timer);
-        }
-    }, [screen]);
-
-    switch(screen){
-        case 'tarjetas': 
-            return <TarjetasScreen/>
-        
-        case 'componente1':
-            return <Componente1/>
-
-        case 'pressable':
-            return <PressableScreen/>
-
-        case 'switch':
-            return <SwitchScreen/>
-        
-        case 'formulario':
-            return (
-                <FormularioScreen
-                onVolver={() => setScreen('menu')}
-                />
-            );
-
-        case 'practica':
-            return <Practica10/>
-
-        case 'componente4':
-            return <Componente4_0/>
-
-        case 'componenteAlert':
-            return <ComponenteAlert/>
-
-        case 'flatlist':
-            return <FlatListScreen/>
-
-        case 'sectionlist':
-            return <SectionListScreen/>
-
-        case 'imagenFondo':
-            return <ImagenFondo style={styles.container}/>
-        
-        case 'home':
-            return <Home/>
-
-        case 'splashScreen':
-            return <SplashScreen/>
-        
-        case 'ComponentesNativos':
-            return <ComponenetesNativos/>
-        
-        case 'menu':
-            default:
-
-        return (
-            <View>
-                <Text>Aqui va la primer Practica de Componentes Nativos</Text>
-
-                <Button title="Practica Tarjetas" onPress={()=>setScreen('tarjetas')}/>
-
-                
-                <Button title="Practica Componente1" onPress={()=>setScreen('componente1')}/>
-                
-                <Button title="Practica Pressable" onPress={() => setScreen('pressable')}/>
-
-                <Button title="Practica Swtich" onPress={() => setScreen('switch')}/>
-
-                <Button title="Practica Formulario" onPress={()=>setScreen('formulario')}/>
-                
-                <Button title="Practica SafeArea" onPress={() => setScreen('practica')}/>
-
-                <Button title="Practica TextInput" onPress={() => setScreen('componente4')}/>
-
-                <Button title="Practica Alert" onPress={() => setScreen('componenteAlert')}/>
-
-                <Button title="Practica FlatList" onPress={() => setScreen('flatlist')}/>
-                
-                <Button title="Practica SectionList" onPress={() => setScreen('sectionlist')}/>
-
-                <Button title='Imagen Bg' onPress={() => setScreen('imagenFondo')}/>
-
-                <Button title='Splash' onPress={() => setScreen('splashScreen')}/>
-
-                <Button title='Home' onPress={() => setScreen('home')}/>
-
-                <Button title='Componentes Nativos' onPress={() => setScreen('ComponentesNativos')}/>
-            </View>
-
-        );
+      return () => clearTimeout(timer);
     }
+  }, [screen]);
+
+  switch (screen) {
+    case 'tarjetas':
+      return <TarjetasScreen />;
+
+    case 'componente1':
+      return <Componente1 />;
+
+    case 'pressable':
+      return <PressableScreen />;
+
+    case 'switch':
+      return <SwitchScreen />;
+
+    case 'formulario':
+      return (
+        <FormularioScreen
+          onVolver={() => setScreen('menu')}
+        />
+      );
+
+    case 'practica':
+      return <Practica10 />;
+
+    case 'componente4':
+      return <Componente4_0 />;
+
+    case 'componenteAlert':
+      return <ComponenteAlert />;
+
+    case 'flatlist':
+      return <FlatListScreen />;
+
+    case 'sectionlist':
+      return <SectionListScreen />;
+
+    case 'imagenFondo':
+      return <ImagenFondo />;
+
+    case 'home':
+      return <Home />;
+
+    case 'splashScreen':
+      return <SplashScreen />;
+
+    case 'componentesNativos':
+      return (
+        <ComponentesNativosScreen
+          onVolver={() => setScreen('menu')}
+        />
+      );
+
+    case 'menu':
+    default:
+      return (
+        <ScrollView
+          style={styles.pantalla}
+          contentContainerStyle={styles.menu}
+        >
+          <Text style={styles.titulo}>
+            Prácticas de Componentes Nativos
+          </Text>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Práctica Tarjetas"
+              onPress={() => setScreen('tarjetas')}
+            />
+          </View>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Práctica Componente 1"
+              onPress={() => setScreen('componente1')}
+            />
+          </View>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Práctica Pressable"
+              onPress={() => setScreen('pressable')}
+            />
+          </View>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Práctica Switch"
+              onPress={() => setScreen('switch')}
+            />
+          </View>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Práctica Formulario"
+              onPress={() => setScreen('formulario')}
+            />
+          </View>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Práctica SafeArea"
+              onPress={() => setScreen('practica')}
+            />
+          </View>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Práctica TextInput"
+              onPress={() => setScreen('componente4')}
+            />
+          </View>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Práctica Alert"
+              onPress={() => setScreen('componenteAlert')}
+            />
+          </View>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Práctica FlatList"
+              onPress={() => setScreen('flatlist')}
+            />
+          </View>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Práctica SectionList"
+              onPress={() => setScreen('sectionlist')}
+            />
+          </View>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Imagen BG"
+              onPress={() => setScreen('imagenFondo')}
+            />
+          </View>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Splash"
+              onPress={() => setScreen('splashScreen')}
+            />
+          </View>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Home"
+              onPress={() => setScreen('home')}
+            />
+          </View>
+
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Componentes Nativos"
+              onPress={() => setScreen('componentesNativos')}
+              color="#1D3557"
+            />
+          </View>
+        </ScrollView>
+      );
+  }
 }
-/* Zona 3: Estilos y posicionamientos */
+
+
+/* Zona 3: estilos */
 const styles = StyleSheet.create({
-  container: {
+  pantalla: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+  },
+
+  menu: {
+    paddingBottom: 30,
+    paddingHorizontal: 15,
+    paddingTop: 30,
+  },
+
+  titulo: {
+    color: '#1D3557',
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+
+  espacioBoton: {
+    marginBottom: 8,
   },
 });
