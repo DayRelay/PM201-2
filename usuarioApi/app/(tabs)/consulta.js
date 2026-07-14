@@ -1,0 +1,5 @@
+import ConsultaaUsuarioScreen from "../../screens/ConsultaUsuariosScreen";
+
+export default function consulta() {
+    return <ConsultaUsuariosScreen></ConsultaUsuariosScreen>;
+}
