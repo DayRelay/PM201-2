@@ -22,12 +22,10 @@ import SectionListScreen from './SectionList';
 import { ImagenFondo } from './ImagenFondo';
 import { Home } from './Home';
 import { SplashScreen } from './SplashScreen';
-
-/*
-  Este archivo usa export default, por eso no lleva llaves.
-  El archivo debe llamarse ComponentesNativos.js.
-*/
 import ComponentesNativosScreen from './ComponentesNativos';
+
+/* Importación de la Práctica 18 */
+import ModalBottomSheetScreen from './ModalBottomSheetScreen';
 
 
 /* Zona 2: componente principal */
@@ -91,6 +89,14 @@ export default function MenuScreen() {
     case 'componentesNativos':
       return (
         <ComponentesNativosScreen
+          onVolver={() => setScreen('menu')}
+        />
+      );
+
+    /* Caso agregado para la Práctica 18 */
+    case 'modalBottomSheet':
+      return (
+        <ModalBottomSheetScreen
           onVolver={() => setScreen('menu')}
         />
       );
@@ -202,6 +208,15 @@ export default function MenuScreen() {
               title="Componentes Nativos"
               onPress={() => setScreen('componentesNativos')}
               color="#1D3557"
+            />
+          </View>
+
+          {/* Botón agregado para la Práctica 18 */}
+          <View style={styles.espacioBoton}>
+            <Button
+              title="Práctica 18: Modal & Bottom Sheet"
+              onPress={() => setScreen('modalBottomSheet')}
+              color="#7C3AED"
             />
           </View>
         </ScrollView>
